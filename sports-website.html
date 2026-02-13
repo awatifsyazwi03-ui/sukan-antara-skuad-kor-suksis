@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sports League Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .admin-btn {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 15px;
+            transition: transform 0.2s;
+        }
+
+        .admin-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .tabs {
+            display: flex;
+            background: #f5f5f5;
+            overflow-x: auto;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .tab {
+            padding: 15px 30px;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            font-size: 16px;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .tab.active {
+            background: white;
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .sport-section {
+            display: none;
+        }
+
+        .sport-section.active {
+            display: block;
+        }
+
+        .standings-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .standings-table th {
+            background: #667eea;
+            color: white;
+            padding: 15px;
+            text-align: left;
+        }
+
+        .standings-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .standings-table tr:hover {
+            background: #f5f5f5;
+        }
+
+        .team-logo {
+            width: 30px;
+            height: 30px;
+            object-fit: contain;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+
+        .fixtures {
+            margin: 20px 0;
+        }
+
+        .fixture-card {
+            background: #f9f9f9;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .fixture-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .teams {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin: 20px 0;
+        }
+
+        .team {
+            text-align: center;
+            flex: 1;
+        }
+
+        .team-name {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .score {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+            padding: 0 20px;
+        }
+
+        .vs {
+            font-size: 1.2em;
+            color: #999;
+            padding: 0 20px;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .close-btn {
+            background: #ff4757;
+            color: white;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .form-group {
+            margin: 15px 0;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            margin: 5px;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: #5568d3;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-danger {
+            background: #ff4757;
+        }
+
+        .btn-danger:hover {
+            background: #ee5a6f;
+        }
+
+        .admin-section {
+            margin: 20px 0;
+        }
+
+        .admin-section h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .team-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .team-item {
+            border: 2px solid #ddd;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .team-item img {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            margin-bottom: 10px;
+        }
+
+        .logout-btn {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-header h2 {
+            color: #333;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        @media (max-width: 768px) {
+            .teams {
+                flex-direction: column;
+            }
+
+            .score, .vs {
+                margin: 10px 0;
+            }
+
+            .tabs {
+                flex-wrap: wrap;
+            }
+
+            .tab {
+                flex: 1 1 45%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏆 Sports League Management</h1>
+            <p>Track fixtures, results, and standings across multiple sports</p>
+            <button class="admin-btn" onclick="showAdminLogin()">Admin Login</button>
+        </header>
+
+        <div class="tabs" id="sportTabs">
+            <!-- Tabs will be generated dynamically -->
+        </div>
+
+        <div class="content" id="mainContent">
+            <!-- Content will be generated dynamically -->
+        </div>
+    </div>
+
+    <!-- Admin Login Modal -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h2>Admin Login</h2>
+                <button class="close-btn" onclick="closeModal('loginModal')">×</button>
+            </div>
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="username" value="admin">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="password" value="admin123">
+            </div>
+            <button class="btn" onclick="login()">Login</button>
+            <p style="margin-top: 15px; color: #999; font-size: 12px;">Default: admin / admin123</p>
+        </div>
+    </div>
+
+    <!-- Admin Panel Modal -->
+    <div class="modal" id="adminModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Admin Panel</h2>
+                <div>
+                    <button class="logout-btn" onclick="logout()">Logout</button>
+                    <button class="close-btn" onclick="closeModal('adminModal')">×</button>
+                </div>
+            </div>
+
+            <div class="admin-section">
+                <h3>Select Sport</h3>
+                <select id="adminSportSelect" onchange="loadAdminData()">
+                    <option value="football">Football</option>
+                    <option value="pingpong">Ping Pong</option>
+                    <option value="volleyball">Volleyball</option>
+                    <option value="netball">Netball</option>
+                    <option value="petanque">Petanque</option>
+                    <option value="tugofwar">Tug of War</option>
+                    <option value="takraw">Takraw</option>
+                    <option value="futsal">Futsal</option>
+                </select>
+            </div>
+
+            <div class="admin-section">
+                <div class="section-header">
+                    <h3>Teams</h3>
+                    <button class="btn" onclick="showAddTeam()">+ Add Team</button>
+                </div>
+                <div id="adminTeamList" class="team-list"></div>
+            </div>
+
+            <div class="admin-section">
+                <div class="section-header">
+                    <h3>Fixtures</h3>
+                    <button class="btn" onclick="showAddFixture()">+ Add Fixture</button>
+                </div>
+                <div id="adminFixtureList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Team Modal -->
+    <div class="modal" id="teamModal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h2 id="teamModalTitle">Add Team</h2>
+                <button class="close-btn" onclick="closeModal('teamModal')">×</button>
+            </div>
+            <div class="form-group">
+                <label>Team Name</label>
+                <input type="text" id="teamName">
+            </div>
+            <div class="form-group">
+                <label>Team Logo URL</label>
+                <input type="text" id="teamLogo" placeholder="https://example.com/logo.png">
+                <small style="color: #999;">Or use emoji: ⚽ 🏀 🏐 🎾</small>
+            </div>
+            <button class="btn" onclick="saveTeam()">Save Team</button>
+            <button class="btn btn-secondary" onclick="closeModal('teamModal')">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Add/Edit Fixture Modal -->
+    <div class="modal" id="fixtureModal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 id="fixtureModalTitle">Add Fixture</h2>
+                <button class="close-btn" onclick="closeModal('fixtureModal')">×</button>
+            </div>
+            <div class="form-group">
+                <label>Home Team</label>
+                <select id="homeTeam"></select>
+            </div>
+            <div class="form-group">
+                <label>Away Team</label>
+                <select id="awayTeam"></select>
+            </div>
+            <div class="form-group">
+                <label>Date & Time</label>
+                <input type="datetime-local" id="fixtureDate">
+            </div>
+            <div class="form-group">
+                <label>Venue</label>
+                <input type="text" id="fixtureVenue" placeholder="Stadium name or location">
+            </div>
+            <div class="form-group">
+                <label>Home Score (leave empty for upcoming match)</label>
+                <input type="number" id="homeScore" min="0">
+            </div>
+            <div class="form-group">
+                <label>Away Score (leave empty for upcoming match)</label>
+                <input type="number" id="awayScore" min="0">
+            </div>
+            <button class="btn" onclick="saveFixture()">Save Fixture</button>
+            <button class="btn btn-secondary" onclick="closeModal('fixtureModal')">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        // Sports configuration
+        const sports = [
+            { id: 'football', name: 'Football', icon: '⚽' },
+            { id: 'pingpong', name: 'Ping Pong', icon: '🏓' },
+            { id: 'volleyball', name: 'Volleyball', icon: '🏐' },
+            { id: 'netball', name: 'Netball', icon: '🏀' },
+            { id: 'petanque', name: 'Petanque', icon: '⚪' },
+            { id: 'tugofwar', name: 'Tug of War', icon: '🪢' },
+            { id: 'takraw', name: 'Takraw', icon: '🥎' },
+            { id: 'futsal', name: 'Futsal', icon: '⚽' }
+        ];
+
+        let currentSport = 'football';
+        let isAdmin = false;
+        let editingTeamId = null;
+        let editingFixtureId = null;
+
+        // Initialize app
+        function init() {
+            initializeStorage();
+            renderTabs();
+            renderContent();
+        }
+
+        // Initialize localStorage with sample data if empty
+        function initializeStorage() {
+            if (!localStorage.getItem('sportsData')) {
+                const sampleData = {};
+                sports.forEach(sport => {
+                    sampleData[sport.id] = {
+                        teams: [],
+                        fixtures: []
+                    };
+                });
+                localStorage.setItem('sportsData', JSON.stringify(sampleData));
+            }
+        }
+
+        // Get data from localStorage
+        function getData() {
+            return JSON.parse(localStorage.getItem('sportsData') || '{}');
+        }
+
+        // Save data to localStorage
+        function saveData(data) {
+            localStorage.setItem('sportsData', JSON.stringify(data));
+        }
+
+        // Render sport tabs
+        function renderTabs() {
+            const tabsContainer = document.getElementById('sportTabs');
+            tabsContainer.innerHTML = sports.map(sport => 
+                `<button class="tab ${sport.id === currentSport ? 'active' : ''}" 
+                        onclick="switchSport('${sport.id}')">
+                    ${sport.icon} ${sport.name}
+                </button>`
+            ).join('');
+        }
+
+        // Switch sport
+        function switchSport(sportId) {
+            currentSport = sportId;
+            renderTabs();
+            renderContent();
+        }
+
+        // Render main content
+        function renderContent() {
+            const data = getData();
+            const sportData = data[currentSport] || { teams: [], fixtures: [] };
+            const content = document.getElementById('mainContent');
+
+            const upcomingFixtures = sportData.fixtures.filter(f => !f.homeScore && !f.awayScore);
+            const results = sportData.fixtures.filter(f => f.homeScore !== undefined && f.awayScore !== undefined);
+            const standings = calculateStandings(sportData);
+
+            content.innerHTML = `
+                <div class="sport-section active">
+                    <div class="section-header">
+                        <h2>League Standings</h2>
+                    </div>
+                    ${standings.length > 0 ? renderStandings(standings, sportData.teams) : '<div class="empty-state">No standings data yet. Add teams and fixtures to see standings.</div>'}
+
+                    <div class="section-header" style="margin-top: 40px;">
+                        <h2>Upcoming Fixtures</h2>
+                    </div>
+                    ${upcomingFixtures.length > 0 ? renderFixtures(upcomingFixtures, sportData.teams, false) : '<div class="empty-state">No upcoming fixtures.</div>'}
+
+                    <div class="section-header" style="margin-top: 40px;">
+                        <h2>Recent Results</h2>
+                    </div>
+                    ${results.length > 0 ? renderFixtures(results, sportData.teams, true) : '<div class="empty-state">No results yet.</div>'}
+                </div>
+            `;
+        }
+
+        // Calculate standings
+        function calculateStandings(sportData) {
+            const standings = {};
+
+            sportData.teams.forEach(team => {
+                standings[team.id] = {
+                    id: team.id,
+                    played: 0,
+                    won: 0,
+                    drawn: 0,
+                    lost: 0,
+                    goalsFor: 0,
+                    goalsAgainst: 0,
+                    points: 0
+                };
+            });
+
+            sportData.fixtures.forEach(fixture => {
+                if (fixture.homeScore !== undefined && fixture.awayScore !== undefined) {
+                    const homeTeam = standings[fixture.homeTeam];
+                    const awayTeam = standings[fixture.awayTeam];
+
+                    if (homeTeam && awayTeam) {
+                        homeTeam.played++;
+                        awayTeam.played++;
+                        homeTeam.goalsFor += parseInt(fixture.homeScore);
+                        homeTeam.goalsAgainst += parseInt(fixture.awayScore);
+                        awayTeam.goalsFor += parseInt(fixture.awayScore);
+                        awayTeam.goalsAgainst += parseInt(fixture.homeScore);
+
+                        if (fixture.homeScore > fixture.awayScore) {
+                            homeTeam.won++;
+                            homeTeam.points += 3;
+                            awayTeam.lost++;
+                        } else if (fixture.homeScore < fixture.awayScore) {
+                            awayTeam.won++;
+                            awayTeam.points += 3;
+                            homeTeam.lost++;
+                        } else {
+                            homeTeam.drawn++;
+                            awayTeam.drawn++;
+                            homeTeam.points++;
+                            awayTeam.points++;
+                        }
+                    }
+                }
+            });
+
+            return Object.values(standings)
+                .sort((a, b) => {
+                    if (b.points !== a.points) return b.points - a.points;
+                    const gdA = a.goalsFor - a.goalsAgainst;
+                    const gdB = b.goalsFor - b.goalsAgainst;
+                    if (gdB !== gdA) return gdB - gdA;
+                    return b.goalsFor - a.goalsFor;
+                });
+        }
+
+        // Render standings table
+        function renderStandings(standings, teams) {
+            return `
+                <table class="standings-table">
+                    <thead>
+                        <tr>
+                            <th>Pos</th>
+                            <th>Team</th>
+                            <th>P</th>
+                            <th>W</th>
+                            <th>D</th>
+                            <th>L</th>
+                            <th>GF</th>
+                            <th>GA</th>
+                            <th>GD</th>
+                            <th>Pts</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${standings.map((standing, index) => {
+                            const team = teams.find(t => t.id === standing.id);
+                            return `
+                                <tr>
+                                    <td>${index + 1}</td>
+                                    <td>
+                                        ${team.logo.startsWith('http') 
+                                            ? `<img src="${team.logo}" class="team-logo" alt="${team.name}">`
+                                            : `<span style="font-size: 24px; margin-right: 10px;">${team.logo}</span>`
+                                        }
+                                        ${team.name}
+                                    </td>
+                                    <td>${standing.played}</td>
+                                    <td>${standing.won}</td>
+                                    <td>${standing.drawn}</td>
+                                    <td>${standing.lost}</td>
+                                    <td>${standing.goalsFor}</td>
+                                    <td>${standing.goalsAgainst}</td>
+                                    <td>${standing.goalsFor - standing.goalsAgainst}</td>
+                                    <td><strong>${standing.points}</strong></td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        // Render fixtures
+        function renderFixtures(fixtures, teams, showScores) {
+            return `
+                <div class="fixtures">
+                    ${fixtures.map(fixture => {
+                        const homeTeam = teams.find(t => t.id === fixture.homeTeam);
+                        const awayTeam = teams.find(t => t.id === fixture.awayTeam);
+                        const date = new Date(fixture.date);
+
+                        return `
+                            <div class="fixture-card">
+                                <div class="fixture-header">
+                                    <span>📍 ${fixture.venue}</span>
+                                    <span>📅 ${date.toLocaleDateString()} ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                                </div>
+                                <div class="teams">
+                                    <div class="team">
+                                        ${homeTeam.logo.startsWith('http') 
+                                            ? `<img src="${homeTeam.logo}" class="team-logo" style="width: 60px; height: 60px;" alt="${homeTeam.name}">`
+                                            : `<div style="font-size: 60px;">${homeTeam.logo}</div>`
+                                        }
+                                        <div class="team-name">${homeTeam.name}</div>
+                                    </div>
+                                    ${showScores 
+                                        ? `<div class="score">${fixture.homeScore} - ${fixture.awayScore}</div>`
+                                        : `<div class="vs">VS</div>`
+                                    }
+                                    <div class="team">
+                                        ${awayTeam.logo.startsWith('http') 
+                                            ? `<img src="${awayTeam.logo}" class="team-logo" style="width: 60px; height: 60px;" alt="${awayTeam.name}">`
+                                            : `<div style="font-size: 60px;">${awayTeam.logo}</div>`
+                                        }
+                                        <div class="team-name">${awayTeam.name}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+
+        // Admin functions
+        function showAdminLogin() {
+            document.getElementById('loginModal').classList.add('active');
+        }
+
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (username === 'admin' && password === 'admin123') {
+                isAdmin = true;
+                closeModal('loginModal');
+                showAdminPanel();
+            } else {
+                alert('Invalid credentials!');
+            }
+        }
+
+        function logout() {
+            isAdmin = false;
+            closeModal('adminModal');
+        }
+
+        function showAdminPanel() {
+            document.getElementById('adminModal').classList.add('active');
+            loadAdminData();
+        }
+
+        function loadAdminData() {
+            const sport = document.getElementById('adminSportSelect').value;
+            const data = getData();
+            const sportData = data[sport] || { teams: [], fixtures: [] };
+
+            // Load teams
+            const teamList = document.getElementById('adminTeamList');
+            teamList.innerHTML = sportData.teams.map(team => `
+                <div class="team-item">
+                    ${team.logo.startsWith('http') 
+                        ? `<img src="${team.logo}" alt="${team.name}">`
+                        : `<div style="font-size: 60px;">${team.logo}</div>`
+                    }
+                    <div><strong>${team.name}</strong></div>
+                    <button class="btn btn-secondary" style="margin-top: 10px; padding: 5px 15px;" onclick="editTeam('${team.id}')">Edit</button>
+                    <button class="btn btn-danger" style="padding: 5px 15px;" onclick="deleteTeam('${team.id}')">Delete</button>
+                </div>
+            `).join('') || '<div class="empty-state">No teams added yet.</div>';
+
+            // Load fixtures
+            const fixtureList = document.getElementById('adminFixtureList');
+            fixtureList.innerHTML = sportData.fixtures.map((fixture, index) => {
+                const homeTeam = sportData.teams.find(t => t.id === fixture.homeTeam);
+                const awayTeam = sportData.teams.find(t => t.id === fixture.awayTeam);
+                const date = new Date(fixture.date);
+
+                return `
+                    <div class="fixture-card">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong>${homeTeam?.name} vs ${awayTeam?.name}</strong><br>
+                                ${date.toLocaleString()}<br>
+                                Venue: ${fixture.venue}<br>
+                                ${fixture.homeScore !== undefined ? `Score: ${fixture.homeScore} - ${fixture.awayScore}` : 'Upcoming'}
+                            </div>
+                            <div>
+                                <button class="btn btn-secondary" onclick="editFixture(${index})">Edit</button>
+                                <button class="btn btn-danger" onclick="deleteFixture(${index})">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('') || '<div class="empty-state">No fixtures added yet.</div>';
+        }
+
+        function showAddTeam() {
+            editingTeamId = null;
+            document.getElementById('teamModalTitle').textContent = 'Add Team';
+            document.getElementById('teamName').value = '';
+            document.getElementById('teamLogo').value = '';
+            document.getElementById('teamModal').classList.add('active');
+        }
+
+        function editTeam(teamId) {
+            const sport = document.getElementById('adminSportSelect').value;
+            const data = getData();
+            const team = data[sport].teams.find(t => t.id === teamId);
+
+            if (team) {
+                editingTeamId = teamId;
+                document.getElementById('teamModalTitle').textContent = 'Edit Team';
+                document.getElementById('teamName').value = team.name;
+                document.getElementById('teamLogo').value = team.logo;
+                document.getElementById('teamModal').classList.add('active');
+            }
+        }
+
+        function saveTeam() {
+            const sport = document.getElementById('adminSportSelect').value;
+            const name = document.getElementById('teamName').value;
+            const logo = document.getElementById('teamLogo').value;
+
+            if (!name || !logo) {
+                alert('Please fill in all fields!');
+                return;
+            }
+
+            const data = getData();
+            if (!data[sport]) data[sport] = { teams: [], fixtures: [] };
+
+            if (editingTeamId) {
+                const teamIndex = data[sport].teams.findIndex(t => t.id === editingTeamId);
+                data[sport].teams[teamIndex] = { ...data[sport].teams[teamIndex], name, logo };
+            } else {
+                const newTeam = {
+                    id: Date.now().toString(),
+                    name,
+                    logo
+                };
+                data[sport].teams.push(newTeam);
+            }
+
+            saveData(data);
+            closeModal('teamModal');
+            loadAdminData();
+            renderContent();
+        }
+
+        function deleteTeam(teamId) {
+            if (!confirm('Are you sure you want to delete this team?')) return;
+
+            const sport = document.getElementById('adminSportSelect').value;
+            const data = getData();
+            data[sport].teams = data[sport].teams.filter(t => t.id !== teamId);
+            saveData(data);
+            loadAdminData();
+            renderContent();
+        }
+
+        function showAddFixture() {
+            const sport = document.getElementById('adminSportSelect').value;
+            const data = getData();
+            const teams = data[sport]?.teams || [];
+
+            if (teams.length < 2) {
+                alert('Please add at least 2 teams first!');
+                return;
+            }
+
+            editingFixtureId = null;
+            document.getElementById('fixtureModalTitle').textContent = 'Add Fixture';
+            
+            const homeTeamSelect = document.getElementById('homeTeam');
+            const awayTeamSelect = document.getElementById('awayTeam');
+            
+            const teamOptions = teams.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+            homeTeamSelect.innerHTML = teamOptions;
+            awayTeamSelect.innerHTML = teamOptions;
+
+            document.getElementById('fixtureDate').value = '';
+            document.getElementById('fixtureVenue').value = '';
+            document.getElementById('homeScore').value = '';
+            document.getElementById('awayScore').value = '';
+
+            document.getElementById('fixtureModal').classList.add('active');
+        }
+
+        function editFixture(index) {
+            const sport = document.getElementById('adminSportSelect').value;
+            const data = getData();
+            const fixture = data[sport].fixtures[index];
+            const teams = data[sport].teams;
+
+            editingFixtureId = index;
+            document.getElementById('fixtureModalTitle').textContent = 'Edit Fixture';
+
+            const homeTeamSelect = document.getElementById('homeTeam');
+            const awayTeamSelect = document.getElementById('awayTeam');
+            
+            const teamOptions = teams.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+            homeTeamSelect.innerHTML = teamOptions;
+            awayTeamSelect.innerHTML = teamOptions;
+
+            homeTeamSelect.value = fixture.homeTeam;
+            awayTeamSelect.value = fixture.awayTeam;
+            document.getElementById('fixtureDate').value = fixture.date;
+            document.getElementById('fixtureVenue').value = fixture.venue;
+            document.getElementById('homeScore').value = fixture.homeScore ?? '';
+            document.getElementById('awayScore').value = fixture.awayScore ?? '';
+
+            document.getElementById('fixtureModal').classList.add('active');
+        }
+
+        function saveFixture() {
+            const sport = document.getElementById('adminSportSelect').value;
+            const homeTeam = document.getElementById('homeTeam').value;
+            const awayTeam = document.getElementById('awayTeam').value;
+            const date = document.getElementById('fixtureDate').value;
+            const venue = document.getElementById('fixtureVenue').value;
+            const homeScore = document.getElementById('homeScore').value;
+            const awayScore = document.getElementById('awayScore').value;
+
+            if (!homeTeam || !awayTeam || !date || !venue) {
+                alert('Please fill in all required fields!');
+                return;
+            }
+
+            if (homeTeam === awayTeam) {
+                alert('Home and away teams must be different!');
+                return;
+            }
+
+            const data = getData();
+            const fixture = {
+                homeTeam,
+                awayTeam,
+                date,
+                venue,
+                homeScore: homeScore ? parseInt(homeScore) : undefined,
+                awayScore: awayScore ? parseInt(awayScore) : undefined
+            };
+
+            if (editingFixtureId !== null) {
+                data[sport].fixtures[editingFixtureId] = fixture;
+            } else {
+                data[sport].fixtures.push(fixture);
+            }
+
+            saveData(data);
+            closeModal('fixtureModal');
+            loadAdminData();
+            renderContent();
+        }
+
+        function deleteFixture(index) {
+            if (!confirm('Are you sure you want to delete this fixture?')) return;
+
+            const sport = document.getElementById('adminSportSelect').value;
+            const data = getData();
+            data[sport].fixtures.splice(index, 1);
+            saveData(data);
+            loadAdminData();
+            renderContent();
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        // Initialize on page load
+        init();
+    </script>
+</body>
+</html>
